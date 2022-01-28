@@ -3,6 +3,7 @@ package environments
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -158,6 +159,19 @@ func (o *EnvironmentPullRequestOptions) GetScmClient(gitURL, kind string) (*scm.
 	gitInfo, err := giturl.ParseGitURL(gitURL)
 	if err != nil {
 		return nil, "", errors.Wrapf(err, "failed to parse git URL")
+	}
+
+	// coding kind url pattern
+	if kind == "coding" {
+		u, err := url.Parse(gitURL)
+		if err == nil {
+			arrs := strings.Split(u.Path, "/")
+			if len(arrs) >= 2 {
+				gitInfo.Organisation = arrs[len(arrs)-2]
+				gitInfo.Project = gitInfo.Organisation
+			}
+		}
+
 	}
 
 	serverURL := gitInfo.HostURLWithoutUser()
